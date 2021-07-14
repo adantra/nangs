@@ -138,3 +138,23 @@ class PDE():
             for batch in dataloader:
                 outputs = torch.cat([outputs, self.model(batch)])
         return outputs
+
+    def eval_with_grad(self, mesh, batch_size=None):
+        dataloader = mesh.build_dataloader(batch_size, shuffle=False)
+        outputs = torch.tensor([]).to(mesh.device)
+        self.model.eval()
+        # with torch.no_grad():
+        for batch in dataloader:
+            batch.requires_grad = True
+            outputs = self.model(batch)
+            # for batch in dataloader:
+
+            # outputs = self.model(batch)
+            p = outputs
+            X = batch
+            X.requires_grad = True
+            grad, = torch.autograd.grad(p, X,
+                                        grad_outputs=p.data.new(p.shape).fill_(1),
+                                        create_graph=True, only_inputs=True)
+            loss = self.computePDELoss(X, p)
+        return outputs, grad, loss['pde'].detach().cpu().numpy()

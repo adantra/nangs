@@ -12,7 +12,8 @@ class Sine(torch.nn.Module):
 def block(i, o):
     fc = torch.nn.Linear(i, o)
     return torch.nn.Sequential(
-        Sine(),
+        #Sine(),
+        torch.nn.GELU(),
         torch.nn.Linear(i, o)
     )
 
